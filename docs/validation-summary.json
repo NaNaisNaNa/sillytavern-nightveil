@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-12",
+  "timezone": "Asia/Shanghai",
+  "version": "0.1.0",
+  "evidence": "simulated-host",
+  "liveRuntimeVerified": false,
+  "developmentEnvironment": {
+    "node": "24.15.0",
+    "playwright": "1.65.0",
+    "chromium": "153.0.8010.12",
+    "firefox": "159.0"
+  },
+  "sourceBaselines": {
+    "sillytavern": "1.19.0",
+    "tavernHelper": "4.12.1"
+  },
+  "unit": {
+    "passed": 9,
+    "failed": 0
+  },
+  "browser": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "build": "passed",
+  "manifest": {
+    "passed": true,
+    "warnings": 0
+  },
+  "visual": {
+    "desktopViewport": "1440x1100",
+    "narrowViewport": "390x844",
+    "reviewed": true
+  },
+  "project": "Nightveil",
+  "displayName": "夜帷 · Nightveil",
+  "packageName": "sillytavern-nightveil"
+}

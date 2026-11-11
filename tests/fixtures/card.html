@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>角色前端配色样本</title>
+<style>
+* { box-sizing: border-box; }
+html { color-scheme: light; background: #fff; color: #20242b; }
+body { margin: 0; padding: 22px; font: 15px/1.65 system-ui, sans-serif; background: white; color: #20242b; }
+h1 { font-size: 23px; margin: 0 0 6px; }
+h2 { font-size: 16px; margin: 0 0 8px; }
+p { margin: 8px 0; }
+a { color: #245ac4; }
+.panel { background: #fff; color: #222; border: 1px solid #cbd0d7; padding: 16px; margin: 16px 0; border-radius: 12px; }
+.badge { color: #7a3c00; background: #fff1d6; border-radius: 20px; padding: 2px 10px; font-size: 12px; }
+.dark-panel { background: #111827; color: #e2e8f0; border-color: #334155; }
+.dark-panel p { color: #cbd5e1; }
+.gradient { background: linear-gradient(110deg, #ffffff, #e7eafb); }
+.background-photo, .layered-photo { width: 160px; height: 54px; background-image: url(/tests/fixtures/colors.svg); border-radius: 4px; }
+.layered-photo { background-image: linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)), url(/tests/fixtures/colors.svg); }
+.transparent { background: transparent; color: inherit; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+button, input, select, textarea { font: inherit; border: 1px solid #adb5c2; border-radius: 7px; padding: 7px 10px; background: white; color: #222; max-width: 100%; }
+button { cursor: pointer; }
+button.primary { background: #5b50b5; color: white; border-color: #5b50b5; }
+textarea { display: block; width: 100%; }
+summary { font-weight: 600; cursor: pointer; }
+.media { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+img, video, canvas { width: 160px; height: 54px; object-fit: fill; border-radius: 4px; }
+dialog { background: white; color: #111; border: 1px solid #bbb; border-radius: 12px; max-width: 90%; }
+#result { font-variant-numeric: tabular-nums; }
+@media(max-width: 420px) { body { padding: 12px; } .panel { padding: 12px; } }
+</style>
+</head>
+<body>
+<span class="badge">角色前端 / 白底测试</span>
+<h1>月下旅馆 · 行动面板</h1>
+<p>在明暗混合的角色界面里阅读、思考，选择下一步行动。</p>
+<section class="panel" id="light-panel">
+<h2>思考与选项</h2>
+<details id="thinking"><summary>展开角色的思考</summary><p id="thought">风从窗边吹来。也许应该先和旅馆老板打个招呼。</p></details>
+<div class="controls"><button class="primary" id="choose">询问房间</button><button id="open-dialog">查看任务</button></div>
+<p>已选择 <output id="result">0</output> 次 · <a href="#notes">查看笔记</a></p>
+<div class="controls"><input id="name" aria-label="旅人称呼" placeholder="旅人称呼"><select id="route" aria-label="行动路线"><option>休息</option><option>探索</option></select></div>
+<textarea id="notes" aria-label="旅行笔记" rows="2" placeholder="记下一点什么……"></textarea>
+</section>
+<section class="panel dark-panel" id="dark-panel"><h2>作者已有的深色状态栏</h2><p>体力 82 / 100 · 夜晚 · 微风</p></section>
+<section class="panel gradient" id="gradient"><h2>渐变与透明区域</h2><p class="transparent" id="transparent">保留层次与布局，压低明亮底色。</p></section>
+<section class="panel" id="inline" style="background: #fff !important; color: #111 !important">行内样式与 !important 的白底面板。</section>
+<section class="panel"><h2>图片、视频与 Canvas 保持原色</h2><div class="media">
+<img id="illustration" alt="红绿蓝原色示例" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='54'%3E%3Cpath fill='%23f04f57' d='M0 0h54v54H0z'/%3E%3Cpath fill='%2339bd84' d='M54 0h53v54H54z'/%3E%3Cpath fill='%234d8af0' d='M107 0h53v54H107z'/%3E%3C/svg%3E">
+<video id="video" muted playsinline aria-label="视频原色示例" poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='54'%3E%3Cpath fill='%23f04f57' d='M0 0h54v54H0z'/%3E%3Cpath fill='%2339bd84' d='M54 0h53v54H54z'/%3E%3Cpath fill='%234d8af0' d='M107 0h53v54H107z'/%3E%3C/svg%3E"></video>
+<div class="background-photo" id="background-photo" aria-label="背景图片原色示例"></div>
+<div class="layered-photo" id="layered-photo" aria-label="渐变与背景图片叠加示例"></div>
+<canvas id="canvas" width="160" height="54" aria-label="Canvas 原色示例"></canvas>
+</div></section>
+<div id="dynamic-root"></div>
+<dialog id="quest-dialog"><h2>夜晚的委托</h2><p>寻找遗落在庭院里的钥匙。</p><button id="close-dialog">返回</button></dialog>
+<script>
+let choices = 0;
+document.getElementById('choose').addEventListener('click', () => { document.getElementById('result').value = String(++choices); });
+document.getElementById('open-dialog').addEventListener('click', () => document.getElementById('quest-dialog').showModal());
+document.getElementById('close-dialog').addEventListener('click', () => document.getElementById('quest-dialog').close());
+const context = document.getElementById('canvas').getContext('2d');
+['#f04f57', '#39bd84', '#4d8af0'].forEach((color, index) => { context.fillStyle = color; context.fillRect(index * 54, 0, 54, 54); });
+window.cardApi = { addPanel() {
+    const style = document.createElement('style');
+    style.textContent = '.dynamic-panel { background: #fff !important; color: #000 !important; padding: 14px; }';
+    document.head.append(style);
+    const panel = document.createElement('section');
+    panel.className = 'dynamic-panel';
+    panel.id = 'dynamic-panel';
+    panel.textContent = '流式新增的白底选项';
+    document.getElementById('dynamic-root').append(panel);
+} };
+</script>
+</body>
+</html>

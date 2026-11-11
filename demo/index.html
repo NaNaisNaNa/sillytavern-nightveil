@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>夜帷 · Nightveil</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+:root { color-scheme: dark; --SmartThemeBorderColor: #38404b; --SmartThemeQuoteColor: #b0c7b6; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #13171c; color: #dfe5ec; font: 15px/1.6 system-ui, sans-serif; }
+header { border-bottom: 1px solid #313943; padding: 24px 32px; }
+header p { color: #9ba7b5; margin: 6px 0 0; }
+h1 { margin: 0; font-size: 26px; font-weight: 650; letter-spacing: -0.5px; }
+.kicker { color: #a9c4b7; font-size: 12px; letter-spacing: 2px; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 900px); gap: 26px; padding: 24px 32px; align-items: start; }
+aside { position: sticky; top: 18px; }
+aside small { color: #9ba7b5; display: block; margin-top: 16px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+button { background: #252d38; color: #e0e6ee; font: inherit; border: 1px solid #44505e; border-radius: 7px; padding: 7px 12px; cursor: pointer; }
+.frame-card { margin-bottom: 24px; min-width: 0; }
+.frame-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: #aeb8c6; font-size: 13px; }
+iframe { display: block; width: 100%; border: 1px solid #3a4553; border-radius: 12px; background: transparent; }
+@media(max-width: 800px) { header { padding: 20px 16px; } .layout { grid-template-columns: 1fr; padding: 16px; gap: 14px; } aside { position: static; } }
+</style>
+</head>
+<body>
+<header><div class="kicker">NIGHTVEIL / FRONTEND DARK MODE</div><h1>让角色前端，也适合夜晚阅读。</h1><p>这是独立的模拟宿主页；不连接真实酒馆，不读取聊天数据。</p></header>
+<div class="layout">
+<aside><div id="extensions_settings"></div><div class="toolbar"><button id="add-light">新增白底前端</button><button id="add-dark">新增深色前端</button></div><small>切换开关可对比原貌。样本覆盖白底选项、深色状态栏、图片、原生控件与动态弹窗。</small></aside>
+<main id="chat" aria-label="角色前端样本"></main>
+</div>
+<script type="module" src="./host.js"></script>
+</body>
+</html>

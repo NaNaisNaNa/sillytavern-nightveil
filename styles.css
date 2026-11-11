@@ -1,0 +1,14 @@
+[data-extension-id="darksilly"] {
+    margin-block: 0.75rem;
+    padding: 0.85rem;
+    border: 1px solid var(--SmartThemeBorderColor, #666);
+    border-radius: 0.5rem;
+    color: inherit;
+    overflow-wrap: anywhere;
+}
+[data-extension-id="darksilly"] h3 { margin: 0 0 0.7rem; font-size: 1em; }
+[data-extension-id="darksilly"] .darksilly-toggle { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+[data-extension-id="darksilly"] input { flex: 0 0 auto; accent-color: var(--SmartThemeQuoteColor, #a6c9b0); }
+[data-extension-id="darksilly"] input:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+[data-extension-id="darksilly"] p { margin: 0.6rem 0 0; line-height: 1.5; font-size: 0.85em; }
+[data-extension-id="darksilly"] .darksilly-help { opacity: 0.8; }

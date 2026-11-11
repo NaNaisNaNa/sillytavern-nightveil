@@ -1,0 +1,18 @@
+{
+  "display_name": "夜帷 · Nightveil",
+  "loading_order": 110,
+  "dependencies": [],
+  "js": "dist/index.js",
+  "css": "styles.css",
+  "author": "Nightveil contributors",
+  "version": "0.1.0",
+  "auto_update": false,
+  "minimum_client_version": "1.19.0",
+  "hooks": {
+    "activate": "onActivate",
+    "enable": "onEnable",
+    "disable": "onDisable",
+    "delete": "onDelete",
+    "clean": "onClean"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "sillytavern-nightveil",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Nightveil: reversible dark mode for Tavern Helper character frontends",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/validate.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:browser": "playwright test",
+    "test": "npm run build && npm run validate && npm run test:unit && npm run test:browser",
+    "demo": "node tests/server.mjs"
+  },
+  "dependencies": {
+    "darkreader": "4.9.135"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "esbuild": "0.28.2"
+  }
+}
