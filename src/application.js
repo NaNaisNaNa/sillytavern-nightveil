@@ -56,13 +56,25 @@ export function createApplication({ document, host, runtimeUrl }) {
         const container = document.getElementById('extensions_settings') || document.getElementById('extensions_settings2');
         if (!container) return;
         if (!panel) {
-            panel = document.createElement('section');
+            panel = document.createElement('details');
+            panel.className = 'inline-drawer';
             panel.id = 'darksilly-settings';
             panel.setAttribute('data-extension-id', EXTENSION_ID);
             panel.setAttribute('aria-labelledby', 'darksilly-title');
-            const heading = document.createElement('h3');
+            const header = document.createElement('summary');
+            header.className = 'inline-drawer-header standoutHeader';
+            const heading = document.createElement('b');
             heading.id = 'darksilly-title';
             heading.textContent = DISPLAY_NAME;
+            const icon = document.createElement('span');
+            icon.className = 'fa-solid fa-circle-chevron-down inline-drawer-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            header.append(heading, icon);
+            const content = document.createElement('div');
+            content.className = 'inline-drawer-content';
+            content.id = 'darksilly-settings-content';
+            // Native details owns expansion; no inline-drawer-toggle class, so
+            // SillyTavern's delegated drawer handler cannot toggle it a second time.
             const label = document.createElement('label');
             label.className = 'darksilly-toggle';
             checkbox = document.createElement('input');
@@ -80,7 +92,8 @@ export function createApplication({ document, host, runtimeUrl }) {
             status.id = 'darksilly-status';
             status.setAttribute('role', 'status');
             status.setAttribute('aria-live', 'polite');
-            panel.append(heading, label, help, status);
+            content.append(label, help, status);
+            panel.append(header, content);
         }
         container.append(panel);
         renderStatus();

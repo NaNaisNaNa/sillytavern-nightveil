@@ -366,13 +366,23 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
     const container = document2.getElementById("extensions_settings") || document2.getElementById("extensions_settings2");
     if (!container) return;
     if (!panel) {
-      panel = document2.createElement("section");
+      panel = document2.createElement("details");
+      panel.className = "inline-drawer";
       panel.id = "darksilly-settings";
       panel.setAttribute("data-extension-id", EXTENSION_ID);
       panel.setAttribute("aria-labelledby", "darksilly-title");
-      const heading = document2.createElement("h3");
+      const header = document2.createElement("summary");
+      header.className = "inline-drawer-header standoutHeader";
+      const heading = document2.createElement("b");
       heading.id = "darksilly-title";
       heading.textContent = DISPLAY_NAME;
+      const icon = document2.createElement("span");
+      icon.className = "fa-solid fa-circle-chevron-down inline-drawer-icon";
+      icon.setAttribute("aria-hidden", "true");
+      header.append(heading, icon);
+      const content = document2.createElement("div");
+      content.className = "inline-drawer-content";
+      content.id = "darksilly-settings-content";
       const label = document2.createElement("label");
       label.className = "darksilly-toggle";
       checkbox = document2.createElement("input");
@@ -390,7 +400,8 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
       status.id = "darksilly-status";
       status.setAttribute("role", "status");
       status.setAttribute("aria-live", "polite");
-      panel.append(heading, label, help, status);
+      content.append(label, help, status);
+      panel.append(header, content);
     }
     container.append(panel);
     renderStatus();
@@ -429,7 +440,7 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
 }
 
 // src/index.js
-var runtimeUrl = new URL("./frame-runtime.js?v=0.1.2", import.meta.url).href;
+var runtimeUrl = new URL("./frame-runtime.js?v=0.1.3", import.meta.url).href;
 var application = null;
 var startScheduled = false;
 var generation = 0;

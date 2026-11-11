@@ -4,13 +4,13 @@
 
 - 自动压暗浅色背景、思考选项和弹窗，尽量保留原有深色设计与图片原色。
 - 支持动态内容、srcdoc／Blob 前端及同源嵌套 iframe。
-- 默认开启，可在扩展设置中随时关闭、恢复原貌。
+- 默认启用；设置区默认收起，点击「夜帷 · Nightveil」展开后可关闭、恢复原貌。
 
 [效果预览](docs/screenshots/desktop-dark.png) · [兼容与验收记录](docs/VALIDATION.md)
 
 ## 安装
 
-在 SillyTavern 的「扩展 → 安装扩展」中填入本仓库地址，安装后刷新页面，在扩展设置中找到「夜帷 · Nightveil」。已包含构建产物，使用时无需安装 Node.js 或运行 npm。
+在 SillyTavern 的「扩展 → 安装扩展」中填入本仓库地址，安装后刷新页面，在扩展设置中点击「夜帷 · Nightveil」展开设置。已包含构建产物，使用时无需安装 Node.js 或运行 npm。
 
 手动安装时，将 `manifest.json`、`styles.css`、`dist/` 和 `LICENSE` 放入 `public/scripts/extensions/third-party/sillytavern-nightveil/`，再刷新酒馆。
 

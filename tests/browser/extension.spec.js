@@ -4,8 +4,14 @@ async function boot(page, query = '?empty=1') {
     await page.goto('/demo/' + query);
     await page.waitForFunction(() => window.demoReady);
     await page.evaluate(() => window.demoReady);
-    await expect(page.locator('#darksilly-enabled')).toBeVisible();
+    await openSettings(page);
     await expect(page.locator('#darksilly-title')).toHaveText('夜帷 · Nightveil');
+}
+async function openSettings(page) {
+    const panel = page.locator('#darksilly-settings');
+    await expect(panel).toBeVisible();
+    if (!await panel.evaluate(element => element.open)) await panel.locator('summary').click();
+    await expect(page.locator('#darksilly-enabled')).toBeVisible();
 }
 async function add(page, options = {}, kind = 'light') {
     return page.evaluate(({ options, kind }) => window.demo.addCard(kind, options), { options, kind });
@@ -247,6 +253,7 @@ test('settings persist; lifecycle hooks are idempotent and cleanup is scoped', a
     await page.reload();
     await page.waitForFunction(() => window.demoReady);
     await page.evaluate(() => window.demoReady);
+    await openSettings(page);
     await expect(page.locator('#darksilly-enabled')).not.toBeChecked();
     expect(await page.evaluate(() => window.demo.context.extensionSettings.darksilly.futureOption)).toBe('keep');
     const secondId = await add(page);
@@ -515,6 +522,7 @@ test('1.14.0 module loader starts without hooks and preserves the saved toggle a
     await expect(target.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
     await page.reload();
     await page.evaluate(() => window.demoReady);
+    await openSettings(page);
     await expect(page.locator('#darksilly-enabled')).not.toBeChecked();
     const nextId = await page.locator('#chat iframe').first().getAttribute('id');
     const next = await ready(page, nextId, '#light-panel');
@@ -557,4 +565,80 @@ test('a modern hook-only import stays inert and an immediate disable cancels act
     await page.evaluate(() => window.extension.onEnable());
     await active(page, 2);
     await expect(page.locator('#darksilly-settings')).toHaveCount(1);
+});
+
+
+for (const host of ['modern', '1.14.0']) {
+    test('settings drawer prevents accidental toggles and starts collapsed on ' + host, async ({ page }, testInfo) => {
+        await page.goto('/demo/?host=' + host);
+        await page.evaluate(() => window.demoReady);
+        await active(page, 2);
+        const panel = page.locator('#darksilly-settings');
+        const header = panel.locator('summary');
+        const checkbox = page.locator('#darksilly-enabled');
+        await expect(panel).toHaveJSProperty('open', false);
+        await expect(header).toBeVisible();
+        await expect(header).toHaveClass(/standoutHeader/);
+        await expect(checkbox).toBeHidden();
+        await expect(checkbox).toBeChecked();
+        await page.evaluate(() => {
+            window.nativeDrawerClicks = 0;
+            document.addEventListener('click', event => {
+                if (event.target.closest('.inline-drawer-toggle')) window.nativeDrawerClicks++;
+            });
+        });
+        const saved = await page.evaluate(() => window.demoSaveCount);
+        await page.screenshot({ path: testInfo.outputPath('settings-collapsed.png'), fullPage: true });
+        await header.click();
+        await expect(panel).toHaveJSProperty('open', true);
+        await expect(checkbox).toBeVisible();
+        await expect(checkbox).toBeChecked();
+        await page.screenshot({ path: testInfo.outputPath('settings-expanded.png'), fullPage: true });
+        await header.click();
+        await expect(checkbox).toBeHidden();
+        expect(await page.evaluate(() => window.nativeDrawerClicks)).toBe(0);
+        expect(await page.evaluate(() => window.demoSaveCount)).toBe(saved);
+        await active(page, 2);
+        await header.click();
+        await checkbox.uncheck();
+        await active(page, 0);
+        await header.click();
+        await header.click();
+        await expect(checkbox).not.toBeChecked();
+        await page.reload();
+        await page.evaluate(() => window.demoReady);
+        await expect(panel).toHaveJSProperty('open', false);
+        await expect(checkbox).toBeHidden();
+        await expect(checkbox).not.toBeChecked();
+        await active(page, 0);
+    });
+}
+
+test('settings drawer supports keyboard navigation on narrow screens', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/demo/?empty=1');
+    await page.evaluate(() => window.demoReady);
+    const panel = page.locator('#darksilly-settings');
+    const header = panel.locator('summary');
+    const checkbox = page.locator('#darksilly-enabled');
+    await header.focus();
+    await header.press('Enter');
+    await expect(checkbox).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(checkbox).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(checkbox).not.toBeChecked();
+    const saved = await page.evaluate(() => window.demoSaveCount);
+    await header.focus();
+    await header.press('Space');
+    await expect(panel).toHaveJSProperty('open', false);
+    await expect(checkbox).toBeHidden();
+    expect(await page.evaluate(() => window.demoSaveCount)).toBe(saved);
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#add-light')).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('settings-narrow-collapsed.png'), fullPage: true });
+    await header.click();
+    await expect(checkbox).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('settings-narrow-expanded.png'), fullPage: true });
 });

@@ -10,6 +10,8 @@
 
 `SillyTavern.getContext()`、`context.extensionSettings`、`context.saveSettingsDebounced()` 及现有设置容器在 1.14.0 中均存在，因此没有引入私有模块导入、设置迁移或另一套持久化机制。清单及能力契约的最低宿主声明一并改为 1.14.0。
 
+0.1.3 的设置区采用默认收起的原生 `details/summary`，沿用宿主的 `inline-drawer-header`、`standoutHeader` 和 `inline-drawer-content` 样式。标题不带 `inline-drawer-toggle`，避免触发宿主的委托点击处理而重复展开；展开状态不写入持久设置，刷新后仍收起，原有启用状态保持不变。
+
 ## 固定源码依据
 
 - **SillyTavern 1.14.0**：tag 对应提交 `9c9be90821ffd6132b40b5f04982522a61d7ad30`。
@@ -18,6 +20,8 @@
   - [公开全局对象](https://github.com/SillyTavern/SillyTavern/blob/9c9be90821ffd6132b40b5f04982522a61d7ad30/public/script.js)：扩展加载前建立 `globalThis.SillyTavern.getContext`。
   - [设置容器](https://github.com/SillyTavern/SillyTavern/blob/9c9be90821ffd6132b40b5f04982522a61d7ad30/public/index.html)：`extensions_settings`、`extensions_settings2`。
 - **原开发基线 SillyTavern 1.19.0**：`7e8663cd9c184a550b37238218bdd32c6efc68e9`；原有生命周期模拟回归继续保留。
+
+设置样式已核对上述两个固定提交的 `public/style.css`；两端均提供 `standoutHeader` 与抽屉标题、内容样式。浏览器原生折叠行为不依赖新增的酒馆 API。
 
 以上均是源码证据，不能替代目标实例中的安装、权限与行为验证。
 
@@ -31,5 +35,5 @@
 
 - 改动前，无钩子的 1.14.0 加载器模拟无法挂载设置面板；改动后在 Chromium、Firefox 均通过。
 - 模拟回归覆盖已有前端、动态前端、开关即时恢复、开关状态刷新保存，以及扩展被禁用时不加载、重新启用后刷新加载。
-- 完整检查：10 项 Node 单元测试与 44 项浏览器测试通过；包括原有新版钩子幂等、清理及混合图片保护回归，并增加仅为清理而导入模块与立即取消启动的回归。
+- 完整检查：10 项 Node 单元测试与 50 项浏览器测试通过；包括原有新版钩子幂等、清理及混合图片保护回归，并增加仅为清理而导入模块与立即取消启动的回归。
 - 仍需在真实 1.14.0 环境核验安装识别、实际设置保存、管理器启停刷新、现用酒馆助手的标识与渲染模式、角色卡交互及手机浏览器表现。未自动安装或修改用户实例。

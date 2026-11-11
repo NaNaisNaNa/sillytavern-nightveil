@@ -16,6 +16,13 @@ h1 { margin: 0; font-size: 26px; font-weight: 650; letter-spacing: -0.5px; }
 .layout { display: grid; grid-template-columns: 300px minmax(0, 900px); gap: 26px; padding: 24px 32px; align-items: start; }
 aside { position: sticky; top: 18px; }
 aside small { color: #9ba7b5; display: block; margin-top: 16px; }
+/* Minimal host drawer styles; the real host supplies these and Font Awesome. */
+.inline-drawer-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+.inline-drawer-content { display: none; }
+.standoutHeader { padding: 5px; border: 1px solid var(--SmartThemeBorderColor); border-radius: 10px; background: #1e252e; }
+.standoutHeader ~ .inline-drawer-content { border: 1px solid var(--SmartThemeBorderColor); border-radius: 10px; background: #101419; }
+.inline-drawer-icon { display: grid; place-items: center; width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; background: #8e939b; }
+.inline-drawer-icon::before { content: ''; width: 7px; height: 7px; border: solid #202630; border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 button { background: #252d38; color: #e0e6ee; font: inherit; border: 1px solid #44505e; border-radius: 7px; padding: 7px 12px; cursor: pointer; }
 .frame-card { margin-bottom: 24px; min-width: 0; }
