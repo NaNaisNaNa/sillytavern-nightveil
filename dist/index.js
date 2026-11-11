@@ -429,7 +429,7 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
 }
 
 // src/index.js
-var runtimeUrl = new URL("./frame-runtime.js", import.meta.url).href;
+var runtimeUrl = new URL("./frame-runtime.js?v=0.1.1", import.meta.url).href;
 var application = null;
 var startScheduled = false;
 var generation = 0;

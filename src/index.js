@@ -2,7 +2,7 @@ import { createApplication } from './application.js';
 import { EXTENSION_ID } from './constants.js';
 import { readHostContext } from './settings.js';
 
-const runtimeUrl = new URL('./frame-runtime.js', import.meta.url).href;
+const runtimeUrl = new URL('./frame-runtime.js?v=' + __NIGHTVEIL_VERSION__, import.meta.url).href;
 let application = null;
 let startScheduled = false;
 let generation = 0;

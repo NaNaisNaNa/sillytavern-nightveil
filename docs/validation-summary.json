@@ -1,7 +1,7 @@
 {
   "date": "2026-11-12",
   "timezone": "Asia/Shanghai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "evidence": "simulated-host",
   "liveRuntimeVerified": false,
   "developmentEnvironment": {
@@ -19,7 +19,7 @@
     "failed": 0
   },
   "browser": {
-    "passed": 36,
+    "passed": 38,
     "failed": 0,
     "skipped": 0,
     "flaky": 0
@@ -36,5 +36,17 @@
   },
   "project": "Nightveil",
   "displayName": "夜帷 · Nightveil",
-  "packageName": "sillytavern-nightveil"
+  "packageName": "sillytavern-nightveil",
+  "liveStyleInspection": {
+    "readOnly": true,
+    "blendedArtworkCompositionObserved": true,
+    "nightveilOwnershipConfirmed": false,
+    "patchedRuntimeInstalled": false,
+    "phoneVerified": false
+  },
+  "regressions": [
+    "isolated-blended-artwork-preserved",
+    "dynamic-important-artwork-and-adjacent-panel",
+    "artwork-disable-restoration"
+  ]
 }

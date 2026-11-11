@@ -1,4 +1,5 @@
 import { enable, disable, setFetchMethod } from 'darkreader';
+import { ARTWORK_SELECTOR, createArtworkGuard } from './artwork-guard.js';
 import { createInlineLedger } from './inline-ledger.js';
 import { EXTENSION_ID, OWNER_ATTRIBUTE, REGISTER_KEY, THEME } from './constants.js';
 
@@ -8,6 +9,7 @@ const engineChrome = window.chrome;
 let enabled = false;
 let disposed = false;
 const ledger = createInlineLedger(document);
+const artwork = createArtworkGuard(document, root => ledger.release(root));
 
 function restoreOwnedShim() {
     if (!__darksillyChromeDescriptor && window.chrome === engineChrome) {
@@ -21,8 +23,9 @@ const controller = {
         setFetchMethod((url) => window.fetch(url, { credentials: 'same-origin', mode: 'cors' }));
         // No image inversion or pixel analysis; no stylesheet API monkey-patch.
         try {
+            artwork.start();
             ledger.start();
-            enable(THEME, { invert: [], ignoreImageAnalysis: ['*'], disableStyleSheetsProxy: true });
+            enable(THEME, { invert: [], ignoreImageAnalysis: ['*'], ignoreInlineStyle: [ARTWORK_SELECTOR, ARTWORK_SELECTOR + ' *'], disableStyleSheetsProxy: true });
             if (!document.querySelector('style.darkreader--inline')?.sheet) {
                 const error = new Error('Dynamic styles were blocked by the document policy.');
                 error.code = 'darksilly-style-blocked';
@@ -30,6 +33,7 @@ const controller = {
             }
             enabled = true;
         } catch (error) {
+            artwork.stop();
             ledger.pause();
             disable();
             ledger.restore();
@@ -39,6 +43,7 @@ const controller = {
     dispose() {
         if (disposed) return;
         disposed = true;
+        artwork.stop();
         ledger.pause();
         try { if (enabled) disable(); } finally { ledger.restore(); enabled = false; restoreOwnedShim(); }
     },

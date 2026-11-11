@@ -1,10 +1,13 @@
 import { build } from 'esbuild';
 import { preserveImagesPlugin } from './darkreader-patch.mjs';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, readFile } from 'node:fs/promises';
+
+const version = JSON.parse(await readFile('package.json', 'utf8')).version;
 
 await mkdir('dist', { recursive: true });
 await build({
     entryPoints: ['src/index.js'], outfile: 'dist/index.js',
+    define: { __NIGHTVEIL_VERSION__: JSON.stringify(version) },
     bundle: true, format: 'esm', platform: 'browser', target: ['es2022'],
     legalComments: 'eof', charset: 'utf8',
 });

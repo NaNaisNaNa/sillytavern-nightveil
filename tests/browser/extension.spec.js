@@ -270,7 +270,7 @@ test('turning off during a delayed frame-runtime request cannot reactivate dark 
     const gate = new Promise((resolve) => { release = resolve; });
     let requested = false;
     let fulfilled = false;
-    await page.route('**/dist/frame-runtime.js', async (route) => {
+    await page.route('**/dist/frame-runtime.js*', async (route) => {
         requested = true;
         await gate;
         try { await route.fulfill({ path: 'dist/frame-runtime.js', contentType: 'text/javascript' }); } catch { /* Removal may cancel the request. */ }
@@ -287,7 +287,7 @@ test('turning off during a delayed frame-runtime request cannot reactivate dark 
     await page.waitForTimeout(250);
     await expect(frame(page, id).locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
     expect(luminance(await color(frame(page, id), '#light-panel'))).toBeGreaterThan(0.9);
-    await page.unroute('**/dist/frame-runtime.js');
+    await page.unroute('**/dist/frame-runtime.js*');
     await page.locator('#darksilly-enabled').check();
     await active(page, 1);
     await page.evaluate(() => { window.extension.onDisable(); window.extension.onEnable(); window.extension.onDisable(); });
@@ -419,4 +419,60 @@ test('background-image URLs stay original while gradient layers darken without i
     expect(Buffer.compare(before, after)).toBe(0);
     await page.locator('#darksilly-enabled').uncheck();
     expect(await color(target, '#layered-photo', 'backgroundImage')).toBe(originalLayered);
+});
+
+test('isolated blended artwork keeps its composition while surrounding panels darken', async ({ page }, testInfo) => {
+    await boot(page, '?empty=1&enabled=0');
+    const html = `<!doctype html><html><head><style>
+      body { margin: 0; padding: 24px; background: white; color: #222; }
+      .reading-panel { padding: 12px; margin-top: 16px; background: #fff; color: #222; }
+      .artwork { width: 96px; height: 96px; position: relative; isolation: isolate; overflow: hidden; border-radius: 48%; background: radial-gradient(circle, white 0%, #fff 28%, #ffe4ed 75%, #f5b9cb 100%); }
+      .artwork img { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; filter: saturate(.82) contrast(.95) brightness(1.06); }
+      .artwork::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(145deg, rgba(255,255,255,.28), transparent 45%, rgba(228,128,161,.12)); }
+    </style></head><body><div class='artwork'><img src='/tests/fixtures/colors.svg' alt='Color sample'></div><section class='reading-panel'>Reading panel</section><div id='dynamic-artwork'></div></body></html>`;
+    const id = await add(page, { html, height: 300 });
+    const target = await ready(page, id, '.artwork img');
+    await target.locator('.artwork img').evaluate(image => image.decode());
+    const imageFilter = await color(target, '.artwork img', 'filter');
+    const originalBackdrop = await color(target, '.artwork', 'backgroundImage');
+    const snapshot = async (selector = '.artwork') => {
+        const element = target.locator(selector).first();
+        await element.scrollIntoViewIfNeeded();
+        const box = await element.boundingBox();
+        return page.screenshot({ clip: { x: box.x + 22, y: box.y + 22, width: 52, height: 52 } });
+    };
+    const before = await snapshot();
+    await page.locator('#darksilly-enabled').check();
+    await active(page, 1);
+    await expectDark(target, '.reading-panel');
+    const after = await snapshot();
+    await testInfo.attach('artwork-original', { body: before, contentType: 'image/png' });
+    await testInfo.attach('artwork-dark-mode', { body: after, contentType: 'image/png' });
+    expect(Buffer.compare(before, after)).toBe(0);
+    expect(await color(target, '.artwork img', 'mixBlendMode')).toBe('multiply');
+    expect(await color(target, '.artwork img', 'filter')).toBe(imageFilter);
+    await expect(target.locator('[data-nightveil-artwork]')).toHaveCount(1);
+    await target.evaluate((background) => {
+        const surface = document.createElement('div');
+        surface.className = 'artwork';
+        surface.style.setProperty('background-image', background, 'important');
+        surface.innerHTML = '<img src="/tests/fixtures/colors.svg" alt="Color sample">';
+        document.getElementById('dynamic-artwork').append(surface);
+        const panel = document.createElement('section');
+        panel.id = 'late-reading';
+        panel.style.setProperty('background-color', 'white', 'important');
+        panel.textContent = 'Another reading panel';
+        document.body.append(panel);
+    }, originalBackdrop);
+    await expect(target.locator('[data-nightveil-artwork]')).toHaveCount(2);
+    await target.locator('#dynamic-artwork img').evaluate(image => image.decode());
+    const dynamicPixels = await snapshot('#dynamic-artwork .artwork');
+    expect(await color(target, '#dynamic-artwork .artwork', 'backgroundImage')).toBe(originalBackdrop);
+    await expectDark(target, '#late-reading');
+    await page.locator('#darksilly-enabled').uncheck();
+    await expect(target.locator('[data-nightveil-artwork]')).toHaveCount(0);
+    expect(Buffer.compare(dynamicPixels, await snapshot('#dynamic-artwork .artwork'))).toBe(0);
+    expect(await color(target, 'body > .artwork', 'backgroundImage')).toBe(originalBackdrop);
+    await expect(target.locator('.artwork img')).toHaveCount(2);
+    await expect.poll(() => target.evaluate(() => [...document.querySelectorAll('*')].filter(node => [...node.attributes].some(attr => attr.name.startsWith('data-darkreader-'))).length)).toBe(0);
 });

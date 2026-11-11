@@ -5,7 +5,7 @@
   "js": "dist/index.js",
   "css": "styles.css",
   "author": "Nightveil contributors",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "auto_update": false,
   "minimum_client_version": "1.19.0",
   "hooks": {

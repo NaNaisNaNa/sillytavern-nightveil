@@ -1,3 +1,5 @@
+import { ARTWORK_SELECTOR } from './artwork-guard.js';
+
 // Reversible bridge for author inline !important colors. CSS rules alone cannot
 // override those declarations, even when Dark Reader marks its rules important.
 const COLOR_PROPERTIES = [
@@ -29,7 +31,7 @@ export function createInlineLedger(document) {
     }
 
     function normalize(node) {
-        if (!node.style || !node.hasAttribute('style')) return;
+        if (!node.style || !node.hasAttribute('style') || node.closest(ARTWORK_SELECTOR)) return;
         const record = ensure(node);
         for (const property of COLOR_PROPERTIES) {
             const value = node.style.getPropertyValue(property);
@@ -53,6 +55,7 @@ export function createInlineLedger(document) {
 
     function capture(mutation) {
         const node = mutation.target;
+        if (node.closest(ARTWORK_SELECTOR)) return;
         const record = ensure(node, mutation.attributeName === 'style' ? mutation.oldValue : node.getAttribute('style'));
         if (mutation.attributeName !== 'style' && !record.attributes.has(mutation.attributeName)) {
             record.attributes.set(mutation.attributeName, mutation.oldValue);
@@ -72,23 +75,28 @@ export function createInlineLedger(document) {
         if (!record.hadStyle && node.style.length === 0) node.removeAttribute('style');
     }
 
+    function processMutations(mutations) {
+        for (const mutation of mutations) if (mutation.type === 'attributes') capture(mutation);
+        let removed = false;
+        for (const mutation of mutations) {
+            if (mutation.type === 'attributes') normalize(mutation.target);
+            else {
+                for (const node of mutation.addedNodes) discover(node);
+                if (mutation.removedNodes.length) removed = true;
+            }
+        }
+        if (removed) for (const [node, record] of nodes) if (!node.isConnected) { restore(node, record); nodes.delete(node); }
+    }
+
     return {
         start() {
-            observer = new document.defaultView.MutationObserver((mutations) => {
-                // Capture pre-engine values before considering the current DOM.
-                for (const mutation of mutations) if (mutation.type === 'attributes') capture(mutation);
-                let removed = false;
-                for (const mutation of mutations) {
-                    if (mutation.type === 'attributes') normalize(mutation.target);
-                    else {
-                        for (const node of mutation.addedNodes) discover(node);
-                        if (mutation.removedNodes.length) removed = true;
-                    }
-                }
-                if (removed) for (const [node, record] of nodes) if (!node.isConnected) { restore(node, record); nodes.delete(node); }
-            });
+            observer = new document.defaultView.MutationObserver(processMutations);
             observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['style', ...INLINE_ATTRIBUTES] });
             discover(document.documentElement);
+        },
+        release(root) {
+            if (observer) processMutations(observer.takeRecords());
+            for (const [node, record] of nodes) if (node === root || root.contains(node)) { restore(node, record); nodes.delete(node); }
         },
         pause() {
             if (!observer) return;
