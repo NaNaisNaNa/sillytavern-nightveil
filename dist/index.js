@@ -429,7 +429,7 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
 }
 
 // src/index.js
-var runtimeUrl = new URL("./frame-runtime.js?v=0.1.1", import.meta.url).href;
+var runtimeUrl = new URL("./frame-runtime.js?v=0.1.2", import.meta.url).href;
 var application = null;
 var startScheduled = false;
 var generation = 0;
@@ -473,6 +473,7 @@ function onClean() {
 function getDiagnostics() {
   return application?.getDiagnostics() ?? { running: false, enabled: false, mounted: false, frames: 0, active: 0, pending: 0, skipped: 0, scopes: 0, reasons: {} };
 }
+if ([...document.scripts].some((script) => script.type === "module" && script.src === import.meta.url)) scheduleStart();
 export {
   getDiagnostics,
   onActivate,

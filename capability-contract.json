@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "minimum": { "sillytavern": "1.19.0", "tavernHelper": null },
+  "minimum": { "sillytavern": "1.14.0", "tavernHelper": null },
   "requirements": [
     { "id": "host-context", "owner": "sillytavern", "symbol": "SillyTavern.getContext", "required": true, "fallback": null },
     { "id": "host-settings", "owner": "sillytavern", "symbol": "context.extensionSettings", "required": true, "fallback": null },

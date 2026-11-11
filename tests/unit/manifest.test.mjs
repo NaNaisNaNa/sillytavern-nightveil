@@ -20,3 +20,9 @@ test('manifest rejects unexported hooks and deprecated Extras fields', async () 
     assert.ok((await validateManifest(root, { ...manifest, hooks: { activate: 'doesNotExist' } })).length);
     assert.ok((await validateManifest(root, { ...manifest, requires: [] })).length);
 });
+
+test('minimum supported host stays aligned at 1.14.0 in the manifest and capability contract', async () => {
+    const contract = JSON.parse(await readFile(new URL('../../capability-contract.json', import.meta.url), 'utf8'));
+    assert.equal(manifest.minimum_client_version, '1.14.0');
+    assert.equal(contract.minimum.sillytavern, manifest.minimum_client_version);
+});

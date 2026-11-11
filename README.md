@@ -14,7 +14,7 @@
 
 手动安装时，将 `manifest.json`、`styles.css`、`dist/` 和 `LICENSE` 放入 `public/scripts/extensions/third-party/sillytavern-nightveil/`，再刷新酒馆。
 
-开发基线：SillyTavern **1.19.0**、酒馆助手 **4.12.1**。跨域、受限沙箱或 CSP 阻止处理的页面会跳过；具体角色卡表现仍需实机验证。
+最低酒馆版本：**SillyTavern 1.14.0**；需有能在当前酒馆运行的酒馆助手。[兼容说明](docs/COMPATIBILITY.md)。跨域、受限沙箱或 CSP 阻止处理的页面会跳过；具体角色卡表现仍需实机验证。
 
 ## 开发
 

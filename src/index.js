@@ -42,3 +42,7 @@ export function onClean() {
 export function getDiagnostics() {
     return application?.getDiagnostics() ?? { running: false, enabled: false, mounted: false, frames: 0, active: 0, pending: 0, skipped: 0, scopes: 0, reasons: {} };
 }
+
+// 1.14.0 injects a module script without invoking hooks. Bootstrap only that
+// loader path: newer hosts may also import the module solely for a cleanup hook.
+if ([...document.scripts].some((script) => script.type === 'module' && script.src === import.meta.url)) scheduleStart();

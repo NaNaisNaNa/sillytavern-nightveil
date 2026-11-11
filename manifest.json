@@ -5,9 +5,9 @@
   "js": "dist/index.js",
   "css": "styles.css",
   "author": "Nightveil contributors",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "auto_update": false,
-  "minimum_client_version": "1.19.0",
+  "minimum_client_version": "1.14.0",
   "hooks": {
     "activate": "onActivate",
     "enable": "onEnable",

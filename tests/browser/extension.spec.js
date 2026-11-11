@@ -441,6 +441,31 @@ test('isolated blended artwork keeps its composition while surrounding panels da
         const box = await element.boundingBox();
         return page.screenshot({ clip: { x: box.x + 22, y: box.y + 22, width: 52, height: 52 } });
     };
+    const expectSameArtwork = async (before, after) => {
+        if (before.equals(after)) return;
+        // Chromium can dither gradients by up to 2/255 at identical coordinates.
+        // Compare decoded pixels, retaining strict author-style checks below.
+        const delta = await page.evaluate(async (encoded) => {
+            const images = await Promise.all(encoded.map(async value => {
+                const image = new Image();
+                image.src = 'data:image/png;base64,' + value;
+                await image.decode();
+                return image;
+            }));
+            if (images[0].width !== images[1].width || images[0].height !== images[1].height) return 256;
+            const pixels = images.map(image => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width; canvas.height = image.height;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0);
+                return context.getImageData(0, 0, canvas.width, canvas.height).data;
+            });
+            let maximum = 0;
+            for (let i = 0; i < pixels[0].length; i++) maximum = Math.max(maximum, Math.abs(pixels[0][i] - pixels[1][i]));
+            return maximum;
+        }, [before.toString('base64'), after.toString('base64')]);
+        expect(delta).toBeLessThanOrEqual(2);
+    };
     const before = await snapshot();
     await page.locator('#darksilly-enabled').check();
     await active(page, 1);
@@ -448,7 +473,7 @@ test('isolated blended artwork keeps its composition while surrounding panels da
     const after = await snapshot();
     await testInfo.attach('artwork-original', { body: before, contentType: 'image/png' });
     await testInfo.attach('artwork-dark-mode', { body: after, contentType: 'image/png' });
-    expect(Buffer.compare(before, after)).toBe(0);
+    await expectSameArtwork(before, after);
     expect(await color(target, '.artwork img', 'mixBlendMode')).toBe('multiply');
     expect(await color(target, '.artwork img', 'filter')).toBe(imageFilter);
     await expect(target.locator('[data-nightveil-artwork]')).toHaveCount(1);
@@ -471,8 +496,65 @@ test('isolated blended artwork keeps its composition while surrounding panels da
     await expectDark(target, '#late-reading');
     await page.locator('#darksilly-enabled').uncheck();
     await expect(target.locator('[data-nightveil-artwork]')).toHaveCount(0);
-    expect(Buffer.compare(dynamicPixels, await snapshot('#dynamic-artwork .artwork'))).toBe(0);
+    await expectSameArtwork(dynamicPixels, await snapshot('#dynamic-artwork .artwork'));
     expect(await color(target, 'body > .artwork', 'backgroundImage')).toBe(originalBackdrop);
     await expect(target.locator('.artwork img')).toHaveCount(2);
     await expect.poll(() => target.evaluate(() => [...document.querySelectorAll('*')].filter(node => [...node.attributes].some(attr => attr.name.startsWith('data-darkreader-'))).length)).toBe(0);
+});
+
+test('1.14.0 module loader starts without hooks and preserves the saved toggle across reloads', async ({ page }) => {
+    await boot(page, '?host=1.14.0');
+    await expect(page.locator('#nightveil-legacy-js')).toHaveCount(1);
+    await active(page, 2);
+    const id = await page.locator('#chat iframe').first().getAttribute('id');
+    const target = await ready(page, id, '#light-panel');
+    await expectDark(target, '#light-panel');
+    await expect(page.locator('#darksilly-settings')).toHaveCount(1);
+    await expect(target.locator('script[data-darksilly-owner]')).toHaveCount(1);
+    await page.locator('#darksilly-enabled').uncheck();
+    await expect(target.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+    await page.reload();
+    await page.evaluate(() => window.demoReady);
+    await expect(page.locator('#darksilly-enabled')).not.toBeChecked();
+    const nextId = await page.locator('#chat iframe').first().getAttribute('id');
+    const next = await ready(page, nextId, '#light-panel');
+    expect(luminance(await color(next, '#light-panel'))).toBeGreaterThan(0.9);
+    await page.locator('#darksilly-enabled').check();
+    await active(page, 2);
+    const dynamicId = await add(page);
+    await active(page, 3);
+    await expectDark(await ready(page, dynamicId, '#light-panel'), '#light-panel');
+    expect(await page.evaluate(() => window.extension.getDiagnostics().hostScans)).toBe(1);
+    await page.reload();
+    await page.evaluate(() => window.demoReady);
+    await expect(page.locator('#darksilly-enabled')).toBeChecked();
+    await active(page, 2);
+});
+
+test('1.14.0 disabled extension is not imported and becomes active after the host reloads it', async ({ page }) => {
+    let runtimeRequests = 0;
+    page.on('request', request => { if (request.url().includes('/dist/')) runtimeRequests++; });
+    await page.goto('/demo/?host=1.14.0&extension-disabled=1');
+    await page.evaluate(() => window.demoReady);
+    await expect(page.locator('#darksilly-settings, #nightveil-legacy-js')).toHaveCount(0);
+    expect(runtimeRequests).toBe(0);
+    expect(await page.evaluate(() => window.demo.context.extensionSettings.darksilly)).toBeUndefined();
+    await boot(page, '?host=1.14.0');
+    await active(page, 2);
+    await expect(page.locator('#darksilly-settings')).toHaveCount(1);
+});
+
+test('a modern hook-only import stays inert and an immediate disable cancels activation', async ({ page }) => {
+    await page.goto('/demo/?host=import-only');
+    await page.evaluate(() => window.demoReady);
+    await expect(page.locator('#darksilly-settings')).toHaveCount(0);
+    expect(await page.evaluate(() => window.demo.context.extensionSettings.darksilly)).toBeUndefined();
+    await page.evaluate(() => window.extension.onClean());
+    expect(await page.evaluate(() => window.demoSaveCount)).toBe(0);
+    await page.evaluate(() => { window.extension.onActivate(); window.extension.onDisable(); });
+    await expect(page.locator('#darksilly-settings')).toHaveCount(0);
+    expect(await page.evaluate(() => window.extension.getDiagnostics().running)).toBe(false);
+    await page.evaluate(() => window.extension.onEnable());
+    await active(page, 2);
+    await expect(page.locator('#darksilly-settings')).toHaveCount(1);
 });

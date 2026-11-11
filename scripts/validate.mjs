@@ -35,7 +35,7 @@ export async function validateProject(root) {
     const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
     if (pkg.dependencies.darkreader !== '4.9.135') errors.push('Dark Reader must be pinned to 4.9.135');
     if (pkg.version !== manifest.version) errors.push('Package and extension versions differ');
-    if (manifest.minimum_client_version !== '1.19.0') errors.push('Unexpected host compatibility baseline');
+    if (manifest.minimum_client_version !== '1.14.0') errors.push('Unexpected host compatibility baseline');
     for (const file of ['dist/frame-runtime.js', 'dist/DARKREADER-LICENSE', 'dist/DARKREADER-PATCH.md', 'LICENSE', 'capability-contract.json', 'README.md']) {
         try { if (!(await stat(path.join(root, file))).isFile()) errors.push('Missing ' + file); } catch { errors.push('Missing ' + file); }
     }

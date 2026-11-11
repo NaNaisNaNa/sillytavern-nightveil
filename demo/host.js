@@ -46,6 +46,25 @@ document.getElementById('add-light').addEventListener('click', () => window.demo
 document.getElementById('add-dark').addEventListener('click', () => window.demo.addCard('dark'));
 window.demoReady = (async () => {
     if (!params.has('empty')) { await window.demo.addCard(); await window.demo.addCard('dark'); }
-    window.extension = await import('/dist/index.js');
-    window.extension.onActivate();
+    if (params.get('host') === '1.14.0') {
+        // Model 1.14.0's module-script loader; it never calls manifest hooks.
+        const name = 'third-party/sillytavern-nightveil';
+        if (params.has('extension-disabled')) context.extensionSettings.disabledExtensions = [name];
+        if (context.extensionSettings.disabledExtensions?.includes(name)) return;
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.id = 'nightveil-legacy-js';
+            script.type = 'module';
+            script.async = true;
+            script.src = '/dist/index.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.append(script);
+        });
+        // Importing the cached module exposes diagnostics without running it again.
+        window.extension = await import('/dist/index.js');
+    } else {
+        window.extension = await import('/dist/index.js');
+        if (params.get('host') !== 'import-only') window.extension.onActivate();
+    }
 })();

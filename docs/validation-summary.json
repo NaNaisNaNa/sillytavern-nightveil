@@ -1,7 +1,7 @@
 {
   "date": "2026-11-12",
   "timezone": "Asia/Shanghai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "evidence": "simulated-host",
   "liveRuntimeVerified": false,
   "developmentEnvironment": {
@@ -11,15 +11,16 @@
     "firefox": "159.0"
   },
   "sourceBaselines": {
-    "sillytavern": "1.19.0",
-    "tavernHelper": "4.12.1"
+    "sillytavern": "1.14.0",
+    "tavernHelper": "4.12.1",
+    "sillytavernAlsoReviewed": "1.19.0"
   },
   "unit": {
-    "passed": 9,
+    "passed": 10,
     "failed": 0
   },
   "browser": {
-    "passed": 38,
+    "passed": 44,
     "failed": 0,
     "skipped": 0,
     "flaky": 0
@@ -32,7 +33,9 @@
   "visual": {
     "desktopViewport": "1440x1100",
     "narrowViewport": "390x844",
-    "reviewed": true
+    "reviewed": true,
+    "blendedArtworkMaxChannelDelta": 2,
+    "blendedArtworkChromiumRepeatPassed": 10
   },
   "project": "Nightveil",
   "displayName": "夜帷 · Nightveil",
@@ -47,6 +50,17 @@
   "regressions": [
     "isolated-blended-artwork-preserved",
     "dynamic-important-artwork-and-adjacent-panel",
-    "artwork-disable-restoration"
-  ]
+    "artwork-disable-restoration",
+    "legacy-hook-independent-bootstrap-and-settings-persistence",
+    "legacy-disabled-extension-loader",
+    "modern-hook-only-import-and-startup-cancellation"
+  ],
+  "legacyHostCompatibility": {
+    "version": "1.14.0",
+    "sourceCommit": "9c9be90821ffd6132b40b5f04982522a61d7ad30",
+    "loaderModel": "module-script-without-lifecycle-hooks",
+    "simulatedHostVerified": true,
+    "liveRuntimeVerified": false,
+    "intermediateVersionsIndividuallyVerified": false
+  }
 }
