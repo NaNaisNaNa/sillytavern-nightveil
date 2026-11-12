@@ -16,14 +16,16 @@ window.demo = {
     context,
     async addCard(kind = 'light', options = {}) {
         const html = options.html ?? await (await fetch('/tests/fixtures/' + (kind === 'dark' ? 'dark.html' : 'card.html'))).text();
+        const littleWhiteBox = (options.renderer ?? params.get('renderer')) === 'littlewhitebox';
         const wrapper = document.createElement('article');
-        wrapper.className = 'frame-card TH-render';
+        wrapper.className = 'frame-card ' + (littleWhiteBox ? 'xiaobaix-iframe-wrapper' : 'TH-render');
         const label = document.createElement('div');
         label.className = 'frame-label';
         label.textContent = kind === 'dark' ? '已有深色设计 / 保留层次' : '白底前端 / 思考 · 选项 · 控件';
         const frame = document.createElement('iframe');
-        frame.id = options.id ?? 'TH-message--demo-' + nextId++;
+        frame.id = options.id ?? (littleWhiteBox ? 'xiaobaix-demo-' : 'TH-message--demo-') + nextId++;
         frame.name = frame.id;
+        frame.className = options.className ?? (littleWhiteBox ? 'xiaobaix-iframe' : '');
         frame.title = kind === 'dark' ? '已有深色角色前端' : '白底角色前端';
         frame.height = String(options.height ?? (kind === 'dark' ? 320 : 1020));
         if (options.sandbox !== undefined) frame.setAttribute('sandbox', options.sandbox);

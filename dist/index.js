@@ -1,7 +1,7 @@
 // src/constants.js
 var EXTENSION_ID = "darksilly";
 var DISPLAY_NAME = "夜帷 · Nightveil";
-var FRAME_SELECTOR = 'iframe[id^="TH-message--"]';
+var FRAME_SELECTOR = 'iframe[id^="TH-message--"], iframe.xiaobaix-iframe';
 var REGISTER_KEY = "__darksillyRegisterV1";
 var OWNER_ATTRIBUTE = "data-darksilly-owner";
 var LOAD_TIMEOUT_MS = 8e3;
@@ -136,7 +136,7 @@ function createFrameManager({ document: document2, runtimeUrl: runtimeUrl2, onSt
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["id", "src", "srcdoc", "sandbox"]
+      attributeFilter: ["id", "class", "src", "srcdoc", "sandbox"]
     });
     scopes.set(scopeDocument, { observer, owner });
     if (owner) metrics.documentScans++;
@@ -333,7 +333,7 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
       const reasons = Object.entries(result.reasons).map(([reason, count]) => (STATUS_LABELS[reason] || "暂不可处理") + " " + count);
       parts.push("跳过 " + result.skipped + " 个（" + reasons.join("、") + "）");
     }
-    if (!result.active && !result.pending && !result.skipped) parts.push("等待酒馆助手渲染角色前端");
+    if (!result.active && !result.pending && !result.skipped) parts.push("等待酒馆助手或小白X渲染前端");
     status.textContent = parts.join("；") + "。";
   }
   function save() {
@@ -391,11 +391,11 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
       checkbox.checked = settings.enabled;
       checkbox.addEventListener("change", onToggle);
       const labelText = document2.createElement("span");
-      labelText.textContent = "压暗角色前端的浅色背景";
+      labelText.textContent = "压暗前端的浅色背景";
       label.append(checkbox, labelText);
       const help = document2.createElement("p");
       help.className = "darksilly-help";
-      help.textContent = "仅作用于酒馆助手的角色前端。尽量保留原有深色设计与图片颜色；关闭即可恢复。";
+      help.textContent = "作用于酒馆助手或小白X渲染的消息前端。尽量保留原有深色设计与图片颜色；关闭即可恢复。";
       status = document2.createElement("p");
       status.id = "darksilly-status";
       status.setAttribute("role", "status");
@@ -440,7 +440,7 @@ function createApplication({ document: document2, host, runtimeUrl: runtimeUrl2 
 }
 
 // src/index.js
-var runtimeUrl = new URL("./frame-runtime.js?v=0.1.3", import.meta.url).href;
+var runtimeUrl = new URL("./frame-runtime.js?v=0.1.4", import.meta.url).href;
 var application = null;
 var startScheduled = false;
 var generation = 0;

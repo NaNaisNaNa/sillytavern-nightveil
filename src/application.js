@@ -26,7 +26,7 @@ export function createApplication({ document, host, runtimeUrl }) {
             const reasons = Object.entries(result.reasons).map(([reason, count]) => (STATUS_LABELS[reason] || '暂不可处理') + ' ' + count);
             parts.push('跳过 ' + result.skipped + ' 个（' + reasons.join('、') + '）');
         }
-        if (!result.active && !result.pending && !result.skipped) parts.push('等待酒馆助手渲染角色前端');
+        if (!result.active && !result.pending && !result.skipped) parts.push('等待酒馆助手或小白X渲染前端');
         status.textContent = parts.join('；') + '。';
     }
 
@@ -83,11 +83,11 @@ export function createApplication({ document, host, runtimeUrl }) {
             checkbox.checked = settings.enabled;
             checkbox.addEventListener('change', onToggle);
             const labelText = document.createElement('span');
-            labelText.textContent = '压暗角色前端的浅色背景';
+            labelText.textContent = '压暗前端的浅色背景';
             label.append(checkbox, labelText);
             const help = document.createElement('p');
             help.className = 'darksilly-help';
-            help.textContent = '仅作用于酒馆助手的角色前端。尽量保留原有深色设计与图片颜色；关闭即可恢复。';
+            help.textContent = '作用于酒馆助手或小白X渲染的消息前端。尽量保留原有深色设计与图片颜色；关闭即可恢复。';
             status = document.createElement('p');
             status.id = 'darksilly-status';
             status.setAttribute('role', 'status');

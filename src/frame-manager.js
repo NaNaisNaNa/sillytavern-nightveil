@@ -108,7 +108,7 @@ export function createFrameManager({ document, runtimeUrl, onStatus = () => {}, 
             }
         });
         observer.observe(scopeDocument.documentElement, {
-            childList: true, subtree: true, attributes: true, attributeFilter: ['id', 'src', 'srcdoc', 'sandbox'],
+            childList: true, subtree: true, attributes: true, attributeFilter: ['id', 'class', 'src', 'srcdoc', 'sandbox'],
         });
         scopes.set(scopeDocument, { observer, owner });
         if (owner) metrics.documentScans++; else metrics.hostScans++;

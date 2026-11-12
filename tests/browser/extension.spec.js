@@ -642,3 +642,120 @@ test('settings drawer supports keyboard navigation on narrow screens', async ({ 
     await expect(checkbox).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('settings-narrow-expanded.png'), fullPage: true });
 });
+
+
+for (const host of ['modern', '1.14.0']) {
+    test('LittleWhiteBox existing srcdoc and dynamic Blob renderers coexist with Tavern Helper on ' + host, async ({ page }) => {
+        await boot(page, '?host=' + host + '&renderer=littlewhitebox');
+        await active(page, 2);
+        const initial = frame(page, 'xiaobaix-demo-0');
+        await expectDark(initial, '#light-panel');
+        await initial.locator('#choose').click();
+        await expect(initial.locator('#result')).toHaveText('1');
+        await initial.locator('#name').fill('Nightveil');
+        await expect(initial.locator('#name')).toHaveValue('Nightveil');
+        const blobId = await add(page, { renderer: 'littlewhitebox', blob: true });
+        const helperId = await add(page, { renderer: 'tavern-helper' });
+        await active(page, 4);
+        const blob = await ready(page, blobId, '#light-panel');
+        const helper = await ready(page, helperId, '#light-panel');
+        await expectDark(blob, '#light-panel');
+        await expectDark(helper, '#light-panel');
+        await expect(initial.locator('script[data-darksilly-owner]')).toHaveCount(1);
+        await expect(blob.locator('script[data-darksilly-owner]')).toHaveCount(1);
+        expect(await color(blob, '#illustration', 'filter')).toBe('none');
+        await page.locator('#darksilly-enabled').uncheck();
+        for (const target of [initial, blob, helper]) {
+            await expect(target.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+            expect(luminance(await color(target, '#light-panel'))).toBeGreaterThan(0.9);
+        }
+        await page.locator('#darksilly-enabled').check();
+        await active(page, 4);
+        expect(await page.evaluate(() => window.extension.getDiagnostics().hostScans)).toBe(2);
+    });
+}
+
+test('LittleWhiteBox streaming callback, late options and nested frames keep working', async ({ page }) => {
+    await boot(page);
+    const html = await (await page.request.get('/tests/fixtures/littlewhitebox-template.html')).text();
+    const id = await add(page, { renderer: 'littlewhitebox', html, height: 420 });
+    const target = await ready(page, id, '#stream-panel');
+    await active(page, 1);
+    await expectDark(target, '#stream-panel');
+    await target.evaluate(() => {
+        for (let i = 0; i < 80; i++) window.updateTemplateVariables({ mood: '更新 ' + i });
+        window.updateTemplateVariables({ mood: '已完成', option: '新增白底选项' });
+    });
+    await expect(target.locator('[data-xiaobaix-var]')).toHaveText('已完成');
+    expect(await target.evaluate(() => window.streamUpdates)).toBe(81);
+    await expectDark(target, '#stream-option');
+    await target.locator('#choose').click();
+    await expect(target.locator('#result')).toHaveText('1');
+    await target.evaluate(() => {
+        const child = document.createElement('iframe');
+        child.id = child.name = 'littlewhitebox-nested';
+        child.srcdoc = '<!doctype html><body><section id="nested" style="background:white;color:black">Nested panel</section></body>';
+        document.body.append(child);
+    });
+    const nested = await ready(page, 'littlewhitebox-nested', '#nested');
+    await active(page, 2);
+    await expectDark(nested, '#nested');
+    const diagnostics = await page.evaluate(() => window.extension.getDiagnostics());
+    expect(diagnostics.hostScans).toBe(1);
+    expect(diagnostics.injections).toBe(2);
+    await page.locator('#darksilly-enabled').uncheck();
+    await expect(target.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+    await expect(nested.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+    expect(luminance(await color(target, '#stream-option'))).toBeGreaterThan(0.9);
+    expect(await target.locator('#stream-option').evaluate(node => node.style.getPropertyPriority('background-color'))).toBe('important');
+});
+
+test('LittleWhiteBox late class, navigation and marker removal have scoped cleanup', async ({ page }) => {
+    await boot(page);
+    const id = await add(page, { renderer: 'littlewhitebox', className: '', id: 'xiaobaix-late' });
+    const target = await ready(page, id, '#light-panel');
+    const unrelated = await add(page, { renderer: 'littlewhitebox', className: '', id: 'xiaobaix-settings-panel' });
+    const backend = await add(page, { renderer: 'littlewhitebox', id: 'TH-script--background' });
+    await ready(page, unrelated, '#light-panel');
+    await ready(page, backend, '#light-panel');
+    await active(page, 0);
+    expect(luminance(await color(target, '#light-panel'))).toBeGreaterThan(0.9);
+    await page.locator('#' + id).evaluate(element => element.classList.add('xiaobaix-iframe'));
+    await active(page, 1);
+    await expectDark(target, '#light-panel');
+    await page.locator('#' + id).evaluate(element => {
+        window.previousLittleWhiteBoxDocument = element.contentDocument;
+        element.srcdoc = '<!doctype html><body><section id="replacement" style="background:white;color:black">Replacement</section></body>';
+    });
+    const replacement = await ready(page, id, '#replacement');
+    await active(page, 1);
+    await expectDark(replacement, '#replacement');
+    expect(await page.evaluate(() => window.previousLittleWhiteBoxDocument.querySelectorAll('style.darkreader, script[data-darksilly-owner]').length)).toBe(0);
+    await page.locator('#' + id).evaluate(element => element.classList.remove('xiaobaix-iframe'));
+    await active(page, 0);
+    await expect(replacement.locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+    expect(luminance(await color(replacement, '#replacement'))).toBeGreaterThan(0.9);
+    await page.locator('#' + id).evaluate(element => element.classList.add('xiaobaix-iframe'));
+    await active(page, 1);
+    await page.locator('#' + id).evaluate(element => element.closest('.xiaobaix-iframe-wrapper').remove());
+    await expect.poll(() => page.evaluate(() => window.extension.getDiagnostics().frames)).toBe(0);
+    for (const ignored of [unrelated, backend]) {
+        await expect(frame(page, ignored).locator('style.darkreader, script[data-darksilly-owner]')).toHaveCount(0);
+        expect(luminance(await color(frame(page, ignored), '#light-panel'))).toBeGreaterThan(0.9);
+    }
+    expect(await page.evaluate(() => window.extension.getDiagnostics().scopes)).toBe(1);
+});
+
+test('LittleWhiteBox restricted frames fail independently without blocking a readable frontend', async ({ page }) => {
+    await boot(page);
+    await add(page, { renderer: 'littlewhitebox', src: 'http://127.0.0.1:4174/tests/fixtures/card.html' });
+    await add(page, { renderer: 'littlewhitebox', sandbox: 'allow-scripts' });
+    await add(page, { renderer: 'littlewhitebox', html: `<!doctype html><meta http-equiv="Content-Security-Policy" content="script-src 'none'"><body style="background:white">CSP</body>` });
+    await add(page, { renderer: 'littlewhitebox', html: '<!doctype html><meta name="darkreader" content="other"><body style="background:white">Other owner</body>' });
+    const good = await add(page, { renderer: 'littlewhitebox' });
+    await active(page, 1);
+    await expectDark(await ready(page, good, '#light-panel'), '#light-panel');
+    await expect.poll(() => page.evaluate(() => window.extension.getDiagnostics().skipped)).toBe(4);
+    const diagnostics = await page.evaluate(() => window.extension.getDiagnostics());
+    expect(diagnostics.reasons).toEqual({ inaccessible: 1, sandbox: 1, 'script-blocked': 1, 'other-engine': 1 });
+});

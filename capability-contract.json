@@ -5,6 +5,7 @@
     { "id": "host-context", "owner": "sillytavern", "symbol": "SillyTavern.getContext", "required": true, "fallback": null },
     { "id": "host-settings", "owner": "sillytavern", "symbol": "context.extensionSettings", "required": true, "fallback": null },
     { "id": "save-settings", "owner": "sillytavern", "symbol": "context.saveSettingsDebounced", "required": true, "fallback": null },
-    { "id": "message-frames", "owner": "tavern-helper", "symbol": "TH-message-- iframe layout", "required": false, "fallback": "Wait for recognized Tavern Helper message frames; leave all other UI unchanged." }
+    { "id": "message-frames", "owner": "tavern-helper", "symbol": "TH-message-- iframe layout", "required": false, "fallback": "Wait for recognized Tavern Helper message frames; leave all other UI unchanged." },
+    { "id": "littlewhitebox-message-frames", "owner": "provider", "symbol": "iframe.xiaobaix-iframe", "required": false, "fallback": "Wait for recognized LittleWhiteBox message frames; no renderer needs to be installed alongside the other." }
   ]
 }

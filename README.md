@@ -1,6 +1,6 @@
 # 夜帷 · Nightveil
 
-让酒馆助手渲染的角色前端，更适合夜晚阅读。
+让酒馆助手或小白X渲染的前端，更适合夜晚阅读。
 
 - 自动压暗浅色背景、思考选项和弹窗，尽量保留原有深色设计与图片原色。
 - 支持动态内容、srcdoc／Blob 前端及同源嵌套 iframe。
@@ -14,7 +14,7 @@
 
 手动安装时，将 `manifest.json`、`styles.css`、`dist/` 和 `LICENSE` 放入 `public/scripts/extensions/third-party/sillytavern-nightveil/`，再刷新酒馆。
 
-最低酒馆版本：**SillyTavern 1.14.0**；需有能在当前酒馆运行的酒馆助手。[兼容说明](docs/COMPATIBILITY.md)。跨域、受限沙箱或 CSP 阻止处理的页面会跳过；具体角色卡表现仍需实机验证。
+最低酒馆版本：**SillyTavern 1.14.0**；需有能在当前酒馆运行的酒馆助手或小白X，任选其一。[兼容说明](docs/COMPATIBILITY.md)。跨域、受限沙箱或 CSP 阻止处理的页面会跳过；具体角色卡表现仍需实机验证。
 
 ## 开发
 

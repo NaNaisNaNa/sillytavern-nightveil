@@ -1,7 +1,8 @@
 // Keep the original settings/DOM namespace so existing installations retain their settings.
 export const EXTENSION_ID = 'darksilly';
 export const DISPLAY_NAME = '夜帷 · Nightveil';
-export const FRAME_SELECTOR = 'iframe[id^="TH-message--"]';
+// Known message renderers only; plugin settings/apps and backend frames stay out.
+export const FRAME_SELECTOR = 'iframe[id^="TH-message--"], iframe.xiaobaix-iframe';
 export const REGISTER_KEY = '__darksillyRegisterV1';
 export const OWNER_ATTRIBUTE = 'data-darksilly-owner';
 export const LOAD_TIMEOUT_MS = 8000;

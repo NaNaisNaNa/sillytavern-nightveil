@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><style>
+body { margin: 0; background: transparent; color: #222; font: 16px sans-serif; }
+#stream-panel, .stream-option { background: white; color: #222; padding: 12px; }
+</style></head><body>
+<section id="stream-panel"><p>状态：<bdi data-xiaobaix-var="mood">等待更新</bdi></p><button id="choose">选择</button><output id="result">0</output></section>
+<div id="stream-options"></div>
+<script>
+// Anonymous source-matched callback fixture, not the LittleWhiteBox runtime.
+window.streamUpdates = 0;
+window.updateTemplateVariables = function (vars) {
+    window.streamUpdates++;
+    document.querySelector('[data-xiaobaix-var="mood"]').textContent = vars.mood ?? '';
+    if (vars.option && !document.getElementById('stream-option')) {
+        const option = document.createElement('div');
+        option.id = 'stream-option'; option.className = 'stream-option';
+        option.style.setProperty('background-color', 'white', 'important');
+        option.textContent = vars.option;
+        document.getElementById('stream-options').append(option);
+    }
+};
+document.getElementById('choose').addEventListener('click', () => {
+    const result = document.getElementById('result'); result.value = String(Number(result.value) + 1);
+});
+</script></body></html>
